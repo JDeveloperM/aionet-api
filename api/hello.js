@@ -1,19 +1,16 @@
-// Main API endpoint - Modern Vercel Function
+// Modern Vercel Function using Web API format
 export async function GET(request) {
   try {
-    const url = new URL(request.url);
-    const name = url.searchParams.get('name') || 'World';
-
-    return Response.json({
-      message: `Hello ${name}! Welcome to AIONET API`,
+    // Basic response
+    const data = {
+      message: 'Hello from AIONET API!',
       timestamp: new Date().toISOString(),
-      version: '2.0.0',
-      endpoints: {
-        health: '/api/health',
-        hello: '/api/hello',
-        dbTest: '/api/db-test'
-      }
-    });
+      environment: process.env.NODE_ENV || 'development',
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    };
+
+    return Response.json(data);
   } catch (error) {
     console.error('API Error:', error);
     return Response.json(
@@ -31,11 +28,12 @@ export async function POST(request) {
     const body = await request.json();
     
     return Response.json({
-      message: 'API POST endpoint',
-      received: body,
+      message: 'POST request received',
+      data: body,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
+    console.error('POST Error:', error);
     return Response.json(
       { 
         error: 'Bad request',
