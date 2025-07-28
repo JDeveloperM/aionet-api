@@ -175,41 +175,7 @@ async function initializeDatabase() {
   }
 }
 
-// Serverless function handler
-async function handler(req, res) {
-  try {
-    // Set CORS headers for all requests
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Address');
 
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-
-    // Initialize database on first request (with error handling)
-    try {
-      await initializeDatabase();
-    } catch (dbError) {
-      console.error('Database initialization failed:', dbError);
-      return res.status(500).json({
-        error: 'Database connection failed',
-        message: process.env.NODE_ENV !== 'production' ? dbError.message : undefined
-      });
-    }
-
-    // Handle the request with Express app
-    return app(req, res);
-  } catch (error) {
-    console.error('Handler error:', error);
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: process.env.NODE_ENV !== 'production' ? error.message : undefined,
-      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
-    });
-  }
-}
 
 // For local development
 if (process.env.NODE_ENV !== 'production') {
@@ -227,8 +193,10 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Export for Vercel serverless functions
-module.exports = handler;
+// Initialize database on startup for serverless
+initializeDatabase().catch(error => {
+  console.error('Failed to initialize database on startup:', error);
+});
 
-// Also export app for testing
-module.exports.app = app;
+// Export the Express app directly for Vercel (latest approach)
+module.exports = app;

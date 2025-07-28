@@ -1,28 +1,9 @@
 {
   "version": 2,
-  "name": "aionet-backend",
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/index.js",
-      "use": "@vercel/node"
+      "source": "/(.*)",
+      "destination": "/api"
     }
-  ],
-  "routes": [
-    {
-      "src": "/health",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "regions": ["iad1"]
+  ]
 }
