@@ -81,6 +81,25 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logging
 app.use(requestLogger);
 
+// Database initialization middleware for serverless (skip for health checks)
+app.use(async (req, res, next) => {
+  // Skip database initialization for health check endpoints
+  if (req.path === '/health') {
+    return next();
+  }
+
+  try {
+    await initializeDatabase();
+    next();
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    return res.status(500).json({
+      error: 'Database connection failed',
+      message: process.env.NODE_ENV !== 'production' ? error.message : undefined
+    });
+  }
+});
+
 // Health check endpoint (no database required)
 app.get('/health', (req, res) => {
   res.json({
@@ -192,11 +211,6 @@ if (process.env.NODE_ENV !== 'production') {
     process.exit(1);
   });
 }
-
-// Initialize database on startup for serverless
-initializeDatabase().catch(error => {
-  console.error('Failed to initialize database on startup:', error);
-});
 
 // Export the Express app directly for Vercel (latest approach)
 module.exports = app;
