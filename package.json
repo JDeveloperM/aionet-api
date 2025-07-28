@@ -1,0 +1,57 @@
+{
+  "name": "aionet-backend",
+  "version": "1.0.0",
+  "description": "AIONET Dashboard Backend Service",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "echo 'No build step required'",
+    "test": "jest",
+    "setup": "node scripts/setup.js",
+    "test-endpoints": "node scripts/test-endpoints.js",
+    "deploy": "vercel --prod",
+    "logs": "vercel logs"
+  },
+  "dependencies": {
+    "@mysten/dapp-kit": "^0.16.9",
+    "@mysten/enoki": "^0.9.0",
+    "@mysten/sui": "1.35.0",
+    "@mysten/walrus": "^0.1.7",
+    "@supabase/supabase-js": "^2.50.0",
+    "axios": "^1.6.2",
+    "bcryptjs": "^2.4.3",
+    "bull": "^4.12.2",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "node-cron": "^3.0.3",
+    "redis": "^4.6.12",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "aionet",
+    "blockchain",
+    "sui",
+    "trading",
+    "nft",
+    "defi"
+  ],
+  "author": "AIONET Team",
+  "license": "MIT"
+}
