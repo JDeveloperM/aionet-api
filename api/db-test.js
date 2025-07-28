@@ -29,8 +29,8 @@ module.exports = async function handler(req, res) {
 
     // Test database connection
     const { data, error } = await supabase
-      .from('users')
-      .select('count')
+      .from('user_profiles')
+      .select('id')
       .limit(1);
 
     if (error) {
@@ -44,7 +44,9 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       status: 'Database connected successfully',
       timestamp: new Date().toISOString(),
-      testResult: 'OK'
+      testResult: 'OK',
+      tableAccess: 'user_profiles table accessible',
+      recordCount: data ? data.length : 0
     });
 
   } catch (error) {
