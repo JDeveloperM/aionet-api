@@ -1,6 +1,6 @@
 // Try to load .env.local first, then fallback to .env
-require('dotenv').config({ path: '.env.local' });
-require('dotenv').config();
+require('dotenv').config({ path: '../.env.local' });
+require('dotenv').config({ path: '../.env' });
 
 const express = require('express');
 const cors = require('cors');
@@ -127,38 +127,61 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-async function startServer() {
-  try {
-    // Test database connection
-    const dbConnected = await testConnection();
-    if (!dbConnected) {
-      logger.error('Failed to connect to database. Exiting...');
-      process.exit(1);
-    }
+// Initialize database connection for serverless
+let dbInitialized = false;
 
+async function initializeDatabase() {
+  if (!dbInitialized) {
+    try {
+      const dbConnected = await testConnection();
+      if (!dbConnected) {
+        logger.error('Failed to connect to database');
+        throw new Error('Database connection failed');
+      }
+      dbInitialized = true;
+      logger.info('✅ Database connection initialized');
+    } catch (error) {
+      logger.error('Database initialization error:', error);
+      throw error;
+    }
+  }
+}
+
+// Serverless function handler
+async function handler(req, res) {
+  try {
+    // Initialize database on first request
+    await initializeDatabase();
+
+    // Handle the request with Express app
+    return app(req, res);
+  } catch (error) {
+    logger.error('Handler error:', error);
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: process.env.NODE_ENV !== 'production' ? error.message : undefined
+    });
+  }
+}
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+
+  initializeDatabase().then(() => {
     app.listen(PORT, () => {
       logger.info(`🚀 AIONET Backend Server running on port ${PORT}`);
       logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
       logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
     });
-  } catch (error) {
+  }).catch(error => {
     logger.error('Failed to start server:', error);
     process.exit(1);
-  }
+  });
 }
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Shutting down gracefully...');
-  process.exit(0);
-});
+// Export for Vercel serverless functions
+module.exports = handler;
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received. Shutting down gracefully...');
-  process.exit(0);
-});
-
-startServer();
-
-module.exports = app;
+// Also export app for testing
+module.exports.app = app;
