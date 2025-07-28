@@ -8,20 +8,20 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
-const { logger, requestLogger } = require('./config/logger');
-const { testConnection } = require('./config/database');
+const { logger, requestLogger } = require('../config/logger');
+const { testConnection } = require('../config/database');
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/admin');
-const tradingRoutes = require('./routes/trading');
-const blockchainRoutes = require('./routes/blockchain');
-const paymentRoutes = require('./routes/payments');
-const notificationRoutes = require('./routes/notifications');
-const analyticsRoutes = require('./routes/analytics');
-const affiliateRoutes = require('./routes/affiliate');
-const governanceRoutes = require('./routes/governance');
-const socialRoutes = require('./routes/social');
+const authRoutes = require('../routes/auth');
+const adminRoutes = require('../routes/admin');
+const tradingRoutes = require('../routes/trading');
+const blockchainRoutes = require('../routes/blockchain');
+const paymentRoutes = require('../routes/payments');
+const notificationRoutes = require('../routes/notifications');
+const analyticsRoutes = require('../routes/analytics');
+const affiliateRoutes = require('../routes/affiliate');
+const governanceRoutes = require('../routes/governance');
+const socialRoutes = require('../routes/social');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
