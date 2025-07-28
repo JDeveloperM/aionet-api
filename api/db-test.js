@@ -1,18 +1,24 @@
 // Database test Vercel Function
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
-export async function GET(request) {
+module.exports = async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   try {
     // Check environment variables
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return Response.json(
-        { 
-          error: 'Missing environment variables',
-          hasSupabaseUrl: !!process.env.SUPABASE_URL,
-          hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-        },
-        { status: 500 }
-      );
+      return res.status(500).json({
+        error: 'Missing environment variables',
+        hasSupabaseUrl: !!process.env.SUPABASE_URL,
+        hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+      });
     }
 
     // Create Supabase client
@@ -29,16 +35,13 @@ export async function GET(request) {
 
     if (error) {
       console.error('Database error:', error);
-      return Response.json(
-        { 
-          error: 'Database connection failed',
-          details: error.message
-        },
-        { status: 500 }
-      );
+      return res.status(500).json({
+        error: 'Database connection failed',
+        details: error.message
+      });
     }
 
-    return Response.json({
+    return res.status(200).json({
       status: 'Database connected successfully',
       timestamp: new Date().toISOString(),
       testResult: 'OK'
@@ -46,13 +49,10 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('Function error:', error);
-    return Response.json(
-      { 
-        error: 'Function execution failed',
-        message: error.message,
-        stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
-      },
-      { status: 500 }
-    );
+    return res.status(500).json({
+      error: 'Function execution failed',
+      message: error.message,
+      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
+    });
   }
 }

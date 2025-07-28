@@ -1,47 +1,45 @@
-// Main API endpoint - Modern Vercel Function
-export async function GET(request) {
-  try {
-    const url = new URL(request.url);
-    const name = url.searchParams.get('name') || 'World';
+// Main API endpoint - Vercel Function
+module.exports = async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    return Response.json({
-      message: `Hello ${name}! Welcome to AIONET API`,
-      timestamp: new Date().toISOString(),
-      version: '2.0.0',
-      endpoints: {
-        health: '/api/health',
-        hello: '/api/hello',
-        dbTest: '/api/db-test'
-      }
-    });
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  try {
+    if (req.method === 'GET') {
+      const name = req.query.name || 'World';
+
+      return res.status(200).json({
+        message: `Hello ${name}! Welcome to AIONET API`,
+        timestamp: new Date().toISOString(),
+        version: '2.0.0',
+        endpoints: {
+          health: '/api/health',
+          hello: '/api/hello',
+          dbTest: '/api/db-test'
+        }
+      });
+    }
+
+    if (req.method === 'POST') {
+      return res.status(200).json({
+        message: 'API POST endpoint',
+        received: req.body,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('API Error:', error);
-    return Response.json(
-      { 
-        error: 'Internal server error',
-        message: error.message 
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    
-    return Response.json({
-      message: 'API POST endpoint',
-      received: body,
-      timestamp: new Date().toISOString()
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
     });
-  } catch (error) {
-    return Response.json(
-      { 
-        error: 'Bad request',
-        message: error.message 
-      },
-      { status: 400 }
-    );
   }
 }

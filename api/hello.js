@@ -1,45 +1,41 @@
-// Modern Vercel Function using Web API format
-export async function GET(request) {
-  try {
-    // Basic response
-    const data = {
-      message: 'Hello from AIONET API!',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      hasSupabaseUrl: !!process.env.SUPABASE_URL,
-      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-    };
+// Simple Vercel Function
+module.exports = async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    return Response.json(data);
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  try {
+    if (req.method === 'GET') {
+      const data = {
+        message: 'Hello from AIONET API!',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        hasSupabaseUrl: !!process.env.SUPABASE_URL,
+        hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+      };
+      return res.status(200).json(data);
+    }
+
+    if (req.method === 'POST') {
+      return res.status(200).json({
+        message: 'POST request received',
+        data: req.body,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('API Error:', error);
-    return Response.json(
-      { 
-        error: 'Internal server error',
-        message: error.message 
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    
-    return Response.json({
-      message: 'POST request received',
-      data: body,
-      timestamp: new Date().toISOString()
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
     });
-  } catch (error) {
-    console.error('POST Error:', error);
-    return Response.json(
-      { 
-        error: 'Bad request',
-        message: error.message 
-      },
-      { status: 400 }
-    );
   }
 }
