@@ -24,10 +24,5 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "index.js": {
-      "maxDuration": 30
-    }
-  },
   "regions": ["iad1"]
 }
