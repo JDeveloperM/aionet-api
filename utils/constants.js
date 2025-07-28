@@ -43,9 +43,6 @@ const BLOCKCHAIN = {
     MIST_PER_SUI: 1_000_000_000,
     DEFAULT_GAS_BUDGET: 10_000_000, // 0.01 SUI
     NETWORK: process.env.SUI_NETWORK || 'testnet'
-  },
-  WALRUS: {
-    NETWORK: process.env.WALRUS_NETWORK || 'testnet'
   }
 };
 
@@ -233,7 +230,7 @@ const ENCRYPTION = {
   ALGORITHM: 'aes-256-gcm',
   KEY_LENGTH: 32,
   IV_LENGTH: 16,
-  SALT: process.env.ENCRYPTION_SALT || 'AIODash2025_WalrusEncryption_SecureSalt_k8mN9pQ2rS5tU7vW'
+  SALT: process.env.ENCRYPTION_SALT || 'AIODash2025_SupabaseEncryption_SecureSalt_k8mN9pQ2rS5tU7vW'
 };
 
 // JWT Configuration

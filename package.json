@@ -17,7 +17,6 @@
     "@mysten/dapp-kit": "^0.16.9",
     "@mysten/enoki": "^0.9.0",
     "@mysten/sui": "1.35.0",
-    "@mysten/walrus": "^0.1.7",
     "@supabase/supabase-js": "^2.50.0",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
