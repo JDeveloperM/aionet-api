@@ -1,7 +1,9 @@
-// Try to load .env.local first, then fallback to .env
-// In Vercel serverless, the working directory is the project root
-require('dotenv').config({ path: '.env.local' });
-require('dotenv').config();
+// Environment variables are automatically loaded by Vercel
+// Only load dotenv for local development
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: '.env.local' });
+  require('dotenv').config();
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -79,14 +81,35 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logging
 app.use(requestLogger);
 
-// Health check endpoint
+// Health check endpoint (no database required)
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV || 'unknown',
+    hasSupabaseUrl: !!process.env.SUPABASE_URL,
+    hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
   });
+});
+
+// Database health check endpoint
+app.get('/health/db', async (req, res) => {
+  try {
+    await initializeDatabase();
+    res.json({
+      status: 'healthy',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'unhealthy',
+      database: 'disconnected',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // API routes
@@ -134,15 +157,19 @@ let dbInitialized = false;
 async function initializeDatabase() {
   if (!dbInitialized) {
     try {
+      // Check if required environment variables exist
+      if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+      }
+
       const dbConnected = await testConnection();
       if (!dbConnected) {
-        logger.error('Failed to connect to database');
-        throw new Error('Database connection failed');
+        throw new Error('Database connection test failed');
       }
       dbInitialized = true;
-      logger.info('✅ Database connection initialized');
+      console.log('✅ Database connection initialized');
     } catch (error) {
-      logger.error('Database initialization error:', error);
+      console.error('Database initialization error:', error);
       throw error;
     }
   }
@@ -151,16 +178,35 @@ async function initializeDatabase() {
 // Serverless function handler
 async function handler(req, res) {
   try {
-    // Initialize database on first request
-    await initializeDatabase();
+    // Set CORS headers for all requests
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Address');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    // Initialize database on first request (with error handling)
+    try {
+      await initializeDatabase();
+    } catch (dbError) {
+      console.error('Database initialization failed:', dbError);
+      return res.status(500).json({
+        error: 'Database connection failed',
+        message: process.env.NODE_ENV !== 'production' ? dbError.message : undefined
+      });
+    }
 
     // Handle the request with Express app
     return app(req, res);
   } catch (error) {
-    logger.error('Handler error:', error);
+    console.error('Handler error:', error);
     return res.status(500).json({
       error: 'Internal server error',
-      message: process.env.NODE_ENV !== 'production' ? error.message : undefined
+      message: process.env.NODE_ENV !== 'production' ? error.message : undefined,
+      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
     });
   }
 }
