@@ -1,6 +1,7 @@
 // Try to load .env.local first, then fallback to .env
-require('dotenv').config({ path: '../.env.local' });
-require('dotenv').config({ path: '../.env' });
+// In Vercel serverless, the working directory is the project root
+require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
